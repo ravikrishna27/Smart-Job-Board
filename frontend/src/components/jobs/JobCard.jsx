@@ -1,4 +1,5 @@
 import { MapPin, DollarSign, Briefcase, Clock } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import Button from '../common/Button';
 
 export default function JobCard({ job }) {
@@ -51,9 +52,11 @@ export default function JobCard({ job }) {
 
       {/* Footer / CTA */}
       <div className="mt-auto pt-4 border-t border-gray-100">
-        <Button variant="outline" className="w-full">
-          View Details
-        </Button>
+        <Link to={`/jobs/${job.id}`} className="block w-full">
+          <Button variant="outline" className="w-full">
+            View Details
+          </Button>
+        </Link>
       </div>
     </div>
   );

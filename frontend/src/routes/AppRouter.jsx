@@ -7,6 +7,7 @@ import MainLayout from "../layouts/MainLayout";
 // Public Pages
 import Home from "../pages/public/Home";
 import Jobs from "../pages/public/Jobs";
+import JobDetails from "../pages/public/JobDetails";
 import Login from "../pages/public/Login";
 import Register from "../pages/public/Register";
 import About from "../pages/public/About";
@@ -23,6 +24,7 @@ export default function AppRouter() {
         {/* Public Routes */}
         <Route index element={<Home />} />
         <Route path={ROUTES.JOBS} element={<Jobs />} />
+        <Route path={`${ROUTES.JOBS}/:id`} element={<JobDetails />} />
         <Route path={ROUTES.LOGIN} element={<Login />} />
         <Route path={ROUTES.REGISTER} element={<Register />} />
         <Route path={ROUTES.ABOUT} element={<About />} />
