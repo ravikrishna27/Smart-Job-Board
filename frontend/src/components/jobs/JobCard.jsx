@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom';
 import Button from '../common/Button';
 
 export default function JobCard({ job }) {
+  // Handle both Mongoose _id and mock id
+  const id = job._id || job.id;
+
   return (
     <div className="card-custom p-6 flex flex-col h-full group">
       {/* Header: Company & Title */}
@@ -26,21 +29,21 @@ export default function JobCard({ job }) {
         </div>
         <div className="flex items-center gap-2">
           <DollarSign size={16} className="text-gray-400" />
-          <span>{job.salary}</span>
+          <span>${job.salary?.toLocaleString() || job.salary}</span>
         </div>
         <div className="flex items-center gap-2">
           <Briefcase size={16} className="text-gray-400" />
-          <span>{job.type}</span>
+          <span>{job.jobType || job.type}</span>
         </div>
         <div className="flex items-center gap-2">
           <Clock size={16} className="text-gray-400" />
-          <span>Posted {job.postedAt}</span>
+          <span>{job.createdAt ? new Date(job.createdAt).toLocaleDateString() : job.postedAt}</span>
         </div>
       </div>
 
       {/* Skills/Tags */}
       <div className="flex flex-wrap gap-2 mb-6">
-        {job.skills.map((skill, index) => (
+        {job.skills?.map((skill, index) => (
           <span 
             key={index} 
             className="px-3 py-1 bg-gray-50 text-gray-600 rounded-full text-xs font-medium border border-gray-100"
@@ -52,7 +55,7 @@ export default function JobCard({ job }) {
 
       {/* Footer / CTA */}
       <div className="mt-auto pt-4 border-t border-gray-100">
-        <Link to={`/jobs/${job.id}`} className="block w-full">
+        <Link to={`/jobs/${id}`} className="block w-full">
           <Button variant="outline" className="w-full">
             View Details
           </Button>

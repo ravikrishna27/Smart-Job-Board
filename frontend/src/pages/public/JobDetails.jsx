@@ -1,9 +1,11 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { ArrowLeft } from 'lucide-react';
-import { mockJobs } from '../../data/jobs';
+import { jobService } from '../../services/jobService';
 import { ROUTES } from '../../routes/routePaths';
+import { getErrorMessage } from '../../utils/getErrorMessage';
+import { toast } from 'sonner';
 
 import JobHeader from '../../components/jobs/JobHeader';
 import JobDescription from '../../components/jobs/JobDescription';
@@ -14,13 +16,36 @@ import NotFound from './NotFound';
 export default function JobDetails() {
   const { id } = useParams();
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
+  const [job, setJob] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  // Find the job by ID
-  const job = useMemo(() => {
-    return mockJobs.find(j => j.id === parseInt(id, 10));
+  useEffect(() => {
+    const fetchJob = async () => {
+      setIsLoading(true);
+      setError(false);
+      try {
+        const response = await jobService.getJobById(id);
+        setJob(response.data);
+      } catch (err) {
+        setError(true);
+        toast.error('Failed to load job details: ' + getErrorMessage(err));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchJob();
   }, [id]);
 
-  if (!job) {
+  if (isLoading) {
+    return (
+      <div className="bg-gray-50 min-h-screen py-20 flex justify-center">
+        <div className="animate-pulse text-gray-500">Loading job details...</div>
+      </div>
+    );
+  }
+
+  if (error || !job) {
     return <NotFound />;
   }
 

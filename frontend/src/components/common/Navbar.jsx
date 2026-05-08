@@ -1,28 +1,21 @@
 import { useState } from 'react'
-import { Link, NavLink } from 'react-router-dom'
-import { Menu, X, Briefcase } from 'lucide-react'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { Menu, X, Briefcase, User as UserIcon } from 'lucide-react'
 import { ROUTES } from '../../routes/routePaths'
+import { useAuth } from '../../hooks/useAuth'
 
-/**
- * NAVBAR COMPONENT
- * 
- * Professional responsive navigation bar for Smart Job Board
- * Features:
- * - Mobile-friendly hamburger menu
- * - Professional branding
- * - Call-to-action buttons
- * - Responsive design that works on all screen sizes
- * - Active route highlighting
- */
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const { isAuthenticated, role, logout, user } = useAuth()
+  const navigate = useNavigate()
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen)
-  }
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
+  const closeMenu = () => setIsMenuOpen(false)
 
-  const closeMenu = () => {
-    setIsMenuOpen(false)
+  const handleLogout = () => {
+    logout()
+    closeMenu()
+    navigate(ROUTES.HOME)
   }
 
   const navLinkClasses = ({ isActive }) =>
@@ -37,8 +30,10 @@ export default function Navbar() {
         : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
     }`
 
+  const dashboardRoute = role === 'recruiter' ? ROUTES.RECRUITER_DASHBOARD : ROUTES.STUDENT_DASHBOARD
+
   return (
-    <nav className="bg-white shadow-md sticky top-0 z-50">
+    <nav className="bg-white shadow-sm sticky top-0 z-50 border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* LOGO & BRANDING */}
@@ -66,18 +61,37 @@ export default function Navbar() {
 
           {/* CTA BUTTONS - DESKTOP */}
           <div className="hidden md:flex items-center gap-4">
-            <Link 
-              to={ROUTES.LOGIN}
-              className="px-4 py-2 text-blue-600 font-medium hover:bg-blue-50 rounded-lg transition-colors"
-            >
-              Login
-            </Link>
-            <Link 
-              to={ROUTES.REGISTER}
-              className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Sign Up
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <Link 
+                  to={dashboardRoute}
+                  className="px-4 py-2 text-blue-600 font-medium hover:bg-blue-50 rounded-lg transition-colors flex items-center gap-2"
+                >
+                  <UserIcon size={18} /> Dashboard
+                </Link>
+                <button 
+                  onClick={handleLogout}
+                  className="px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link 
+                  to={ROUTES.LOGIN}
+                  className="px-4 py-2 text-blue-600 font-medium hover:bg-blue-50 rounded-lg transition-colors"
+                >
+                  Login
+                </Link>
+                <Link 
+                  to={ROUTES.REGISTER}
+                  className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
 
           {/* MOBILE MENU BUTTON */}
@@ -86,48 +100,60 @@ export default function Navbar() {
             className="md:hidden inline-flex items-center justify-center p-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
             aria-label="Toggle menu"
           >
-            {isMenuOpen ? (
-              <X size={24} />
-            ) : (
-              <Menu size={24} />
-            )}
+            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
       </div>
 
       {/* MOBILE MENU */}
       {isMenuOpen && (
-        <div className="md:hidden bg-white border-t border-gray-200">
+        <div className="md:hidden bg-white border-t border-gray-200 shadow-lg absolute w-full">
           <div className="px-4 pt-2 pb-4 space-y-2">
-            <NavLink 
-              to={ROUTES.JOBS}
-              onClick={closeMenu}
-              className={mobileNavLinkClasses}
-            >
+            <NavLink to={ROUTES.JOBS} onClick={closeMenu} className={mobileNavLinkClasses}>
               Jobs
             </NavLink>
-            <NavLink 
-              to={ROUTES.ABOUT}
-              onClick={closeMenu}
-              className={mobileNavLinkClasses}
-            >
+            <NavLink to={ROUTES.ABOUT} onClick={closeMenu} className={mobileNavLinkClasses}>
               About
             </NavLink>
-            <div className="border-t border-gray-200 pt-2 mt-2 space-y-2">
-              <Link 
-                to={ROUTES.LOGIN}
-                onClick={closeMenu}
-                className="block w-full text-center px-3 py-2 text-blue-600 font-medium hover:bg-blue-50 rounded-lg transition-colors"
-              >
-                Login
-              </Link>
-              <Link 
-                to={ROUTES.REGISTER}
-                onClick={closeMenu}
-                className="block w-full text-center px-3 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Sign Up
-              </Link>
+            
+            <div className="border-t border-gray-200 pt-4 mt-4 space-y-2">
+              {isAuthenticated ? (
+                <>
+                  <div className="px-3 pb-2 text-sm text-gray-500">
+                    Signed in as <span className="font-semibold text-gray-900">{user?.name}</span>
+                  </div>
+                  <Link 
+                    to={dashboardRoute}
+                    onClick={closeMenu}
+                    className="block w-full text-center px-3 py-2 bg-blue-50 text-blue-600 font-medium rounded-lg transition-colors"
+                  >
+                    Go to Dashboard
+                  </Link>
+                  <button 
+                    onClick={handleLogout}
+                    className="block w-full text-center px-3 py-2 text-red-600 font-medium hover:bg-red-50 rounded-lg transition-colors"
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link 
+                    to={ROUTES.LOGIN}
+                    onClick={closeMenu}
+                    className="block w-full text-center px-3 py-2 text-blue-600 font-medium hover:bg-blue-50 rounded-lg transition-colors"
+                  >
+                    Login
+                  </Link>
+                  <Link 
+                    to={ROUTES.REGISTER}
+                    onClick={closeMenu}
+                    className="block w-full text-center px-3 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>

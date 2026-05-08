@@ -3,6 +3,10 @@ import { ROUTES } from "./routePaths";
 
 // Layouts
 import MainLayout from "../layouts/MainLayout";
+import DashboardLayout from "../layouts/DashboardLayout";
+
+// Route Guards
+import ProtectedRoute from "./ProtectedRoute";
 
 // Public Pages
 import Home from "../pages/public/Home";
@@ -20,21 +24,40 @@ import RecruiterDashboard from "../pages/recruiter/RecruiterDashboard";
 export default function AppRouter() {
   return (
     <Routes>
+      {/* Public Routes with Main Navbar/Footer */}
       <Route path="/" element={<MainLayout />}>
-        {/* Public Routes */}
         <Route index element={<Home />} />
         <Route path={ROUTES.JOBS} element={<Jobs />} />
         <Route path={`${ROUTES.JOBS}/:id`} element={<JobDetails />} />
         <Route path={ROUTES.LOGIN} element={<Login />} />
         <Route path={ROUTES.REGISTER} element={<Register />} />
         <Route path={ROUTES.ABOUT} element={<About />} />
-
-        {/* Protected Dashboard Routes (Placeholders) */}
-        <Route path={ROUTES.STUDENT_DASHBOARD} element={<StudentDashboard />} />
-        <Route path={ROUTES.RECRUITER_DASHBOARD} element={<RecruiterDashboard />} />
-
-        {/* 404 Catch All */}
         <Route path="*" element={<NotFound />} />
+      </Route>
+
+      {/* Protected Dashboard Routes */}
+      <Route 
+        path="/student" 
+        element={
+          <ProtectedRoute allowedRoles={['student']}>
+            <DashboardLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="dashboard" element={<StudentDashboard />} />
+        {/* other student routes will go here */}
+      </Route>
+
+      <Route 
+        path="/recruiter" 
+        element={
+          <ProtectedRoute allowedRoles={['recruiter']}>
+            <DashboardLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path="dashboard" element={<RecruiterDashboard />} />
+        {/* other recruiter routes will go here */}
       </Route>
     </Routes>
   );
