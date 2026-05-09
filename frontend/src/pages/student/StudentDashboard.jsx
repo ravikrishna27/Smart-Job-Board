@@ -1,11 +1,41 @@
+import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { Link } from 'react-router-dom';
 import { Briefcase, Bookmark, Star } from 'lucide-react';
+import { toast } from 'sonner';
 import StatsCard from '../../components/dashboard/StatsCard';
 import DashboardCard from '../../components/dashboard/DashboardCard';
 import { useAuth } from '../../hooks/useAuth';
+import { applicationService } from '../../services/applicationService';
+import { getErrorMessage } from '../../utils/getErrorMessage';
 
 export default function StudentDashboard() {
   const { user } = useAuth();
+  const [applications, setApplications] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchApplications = async () => {
+      try {
+        const response = await applicationService.getMyApplications();
+        setApplications(response.data);
+      } catch (error) {
+        toast.error('Failed to load applications: ' + getErrorMessage(error));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchApplications();
+  }, []);
+
+  const getStatusColor = (status) => {
+    switch(status) {
+      case 'reviewed': return 'bg-blue-100 text-blue-700';
+      case 'shortlisted': return 'bg-green-100 text-green-700';
+      case 'rejected': return 'bg-red-100 text-red-700';
+      default: return 'bg-yellow-100 text-yellow-700'; // pending
+    }
+  };
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -23,31 +53,65 @@ export default function StudentDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatsCard 
           title="Applied Jobs" 
-          value="12" 
+          value={isLoading ? '-' : applications.length.toString()} 
           icon={Briefcase} 
-          trend={{ isPositive: true, value: "3" }}
         />
         <StatsCard 
           title="Saved Jobs" 
-          value="8" 
+          value="0" 
           icon={Bookmark} 
         />
         <StatsCard 
           title="Profile Views" 
-          value="45" 
+          value="0" 
           icon={Star} 
-          trend={{ isPositive: true, value: "12" }}
         />
       </div>
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <DashboardCard title="Recent Applications">
-            <div className="text-center py-8 text-gray-500">
-              <p>You haven't applied to any jobs this week.</p>
-              <button className="mt-4 text-blue-600 font-medium hover:text-blue-700">Browse Jobs</button>
-            </div>
+          <DashboardCard title="Your Applications">
+            {isLoading ? (
+              <div className="text-center py-8 text-gray-500 animate-pulse">Loading applications...</div>
+            ) : applications.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <p>You haven't applied to any jobs yet.</p>
+                <Link to="/jobs">
+                  <button className="mt-4 text-blue-600 font-medium hover:text-blue-700">Browse Jobs</button>
+                </Link>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-gray-50 text-gray-600">
+                    <tr>
+                      <th className="px-4 py-3 rounded-tl-lg">Role & Company</th>
+                      <th className="px-4 py-3">Applied On</th>
+                      <th className="px-4 py-3 text-right rounded-tr-lg">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {applications.map(app => (
+                      <tr key={app._id} className="hover:bg-gray-50/50 transition-colors">
+                        <td className="px-4 py-4 font-medium text-gray-900">
+                          {app.job.title}
+                          <div className="text-xs text-gray-500 font-normal">{app.job.company}</div>
+                        </td>
+                        <td className="px-4 py-4 text-gray-500">
+                          {new Date(app.appliedAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-4 py-4 text-right">
+                          <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${getStatusColor(app.status)}`}>
+                            {app.status.charAt(0).toUpperCase() + app.status.slice(1)}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </DashboardCard>
         </div>
         

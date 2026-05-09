@@ -22,6 +22,7 @@ import StudentDashboard from "../pages/student/StudentDashboard";
 import RecruiterDashboard from "../pages/recruiter/RecruiterDashboard";
 import PostJob from "../pages/recruiter/PostJob";
 import EditJob from "../pages/recruiter/EditJob";
+import JobApplicants from "../pages/recruiter/JobApplicants";
 
 export default function AppRouter() {
   return (
@@ -61,6 +62,7 @@ export default function AppRouter() {
         <Route path="dashboard" element={<RecruiterDashboard />} />
         <Route path="jobs/new" element={<PostJob />} />
         <Route path="jobs/edit/:id" element={<EditJob />} />
+        <Route path="jobs/:id/applicants" element={<JobApplicants />} />
       </Route>
     </Routes>
   );

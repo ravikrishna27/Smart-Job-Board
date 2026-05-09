@@ -8,6 +8,7 @@ import cookieParser from 'cookie-parser';
 import jobRoutes from './routes/jobRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import applicationRoutes from './routes/applicationRoutes.js';
 
 // Middleware Imports
 import { notFoundMiddleware } from './middleware/notFoundMiddleware.js';
@@ -37,6 +38,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/jobs', jobRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/applications', applicationRoutes);
 
 // 4. Error Handling Middleware
 app.use(notFoundMiddleware); // Catches 404s
