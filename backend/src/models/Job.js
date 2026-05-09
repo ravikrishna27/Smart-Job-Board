@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import slugify from 'slugify';
 
 const jobSchema = new mongoose.Schema({
   title: {
@@ -7,6 +8,10 @@ const jobSchema = new mongoose.Schema({
     trim: true,
     maxlength: [100, 'Job title cannot exceed 100 characters'],
     index: true // Helps with keyword searching
+  },
+  slug: {
+    type: String,
+    unique: true
   },
   company: {
     type: String,
@@ -71,15 +76,35 @@ const jobSchema = new mongoose.Schema({
     default: false,
     index: true
   },
-  postedBy: {
-    // For now, this is just a string. Later it will be:
-    // type: mongoose.Schema.Types.ObjectId,
-    // ref: 'User',
+  status: {
     type: String,
+    enum: ['open', 'closed', 'draft'],
+    default: 'open',
+    index: true
+  },
+  isDeleted: {
+    type: Boolean,
+    default: false,
+    index: true
+  },
+  postedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
     required: true
   }
 }, {
   timestamps: true // Automatically adds createdAt and updatedAt
+});
+
+// Generate slug before saving
+jobSchema.pre('save', function(next) {
+  if (this.isModified('title') || this.isModified('company') || this.isNew) {
+    const baseSlug = slugify(`${this.title} ${this.company}`, { lower: true, strict: true });
+    // Add a short random string to ensure uniqueness even if title/company are identical
+    const uniqueSuffix = Math.random().toString(36).substring(2, 7);
+    this.slug = `${baseSlug}-${uniqueSuffix}`;
+  }
+  next();
 });
 
 // Compound index for complex searches

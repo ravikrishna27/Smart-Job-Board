@@ -4,23 +4,34 @@ import {
   getJobs, 
   getJobById, 
   updateJob, 
-  deleteJob 
+  deleteJob,
+  getMyJobs,
+  updateJobStatus
 } from '../controllers/jobController.js';
 import { validateJob } from '../validators/jobValidator.js';
 import { validateObjectId } from '../middleware/validateObjectId.js';
+import { protect, authorize } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
+
+// Recruiter specific routes
+router.route('/my-jobs')
+  .get(protect, authorize('recruiter'), getMyJobs);
 
 // Base routes: /api/jobs
 router.route('/')
   .get(getJobs)
-  .post(validateJob, createJob); // Validate body before creating
+  .post(protect, authorize('recruiter'), validateJob, createJob);
 
 // ID-specific routes: /api/jobs/:id
-// validateObjectId runs first to ensure :id is a valid MongoDB ObjectId
+// Note: GET does not use validateObjectId because it can receive a slug (string)
 router.route('/:id')
-  .get(validateObjectId, getJobById)
-  .put(validateObjectId, validateJob, updateJob) // Validate ID, then body
-  .delete(validateObjectId, deleteJob);
+  .get(getJobById)
+  .put(protect, authorize('recruiter'), validateObjectId, validateJob, updateJob)
+  .delete(protect, authorize('recruiter'), validateObjectId, deleteJob);
+
+// Status specific route
+router.route('/:id/status')
+  .patch(protect, authorize('recruiter'), validateObjectId, updateJobStatus);
 
 export default router;

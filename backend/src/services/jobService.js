@@ -1,11 +1,16 @@
 import Job from '../models/Job.js';
+import { AppError } from '../utils/AppError.js';
 
 class JobService {
   /**
    * Create a new job in the database
    */
-  async createJob(jobData) {
-    const job = await Job.create(jobData);
+  async createJob(jobData, userId) {
+    // Attach the recruiter ID before saving
+    const job = await Job.create({
+      ...jobData,
+      postedBy: userId
+    });
     return job;
   }
 
@@ -23,32 +28,31 @@ class JobService {
       limit = 10 
     } = query;
 
-    // 1. Build the query object
-    const filter = {};
+    // 1. Build the query object (excluding soft deleted jobs and only open jobs)
+    const filter = {
+      isDeleted: { $ne: true },
+      status: 'open'
+    };
 
     if (keyword) {
-      // Text search using the compound text index we created in the model
       filter.$text = { $search: keyword };
     }
-
     if (location) {
-      // Case-insensitive regex search for location
       filter.location = { $regex: location, $options: 'i' };
     }
-
     if (jobType) filter.jobType = jobType;
     if (experienceLevel) filter.experienceLevel = experienceLevel;
 
     // 2. Build the Mongoose Query
-    let mongooseQuery = Job.find(filter).select('-__v'); // Exclude the internal Mongoose version key
+    let mongooseQuery = Job.find(filter)
+      .select('-__v')
+      .populate('postedBy', 'name email avatar'); // Add recruiter population
 
     // 3. Sorting
     if (sort) {
-      // e.g., sort=-salary,createdAt -> split by comma, join by space -> "-salary createdAt"
       const sortBy = sort.split(',').join(' ');
       mongooseQuery = mongooseQuery.sort(sortBy);
     } else {
-      // Default sort by newest
       mongooseQuery = mongooseQuery.sort('-createdAt');
     }
 
@@ -75,34 +79,88 @@ class JobService {
   }
 
   /**
-   * Fetch a single job by ID
+   * Fetch jobs posted by a specific recruiter
    */
-  async getJobById(id) {
-    const job = await Job.findById(id).select('-__v');
-    if (!job) throw new Error('Job not found');
-    return job;
+  async getMyJobs(userId) {
+    const jobs = await Job.find({ 
+      postedBy: userId,
+      isDeleted: { $ne: true } 
+    }).sort('-createdAt').select('-__v');
+    return jobs;
   }
 
   /**
-   * Update a job by ID
+   * Fetch a single job by ID or Slug
    */
-  async updateJob(id, updateData) {
-    const job = await Job.findByIdAndUpdate(
-      id,
-      updateData,
-      { new: true, runValidators: true } // Returns the new document and runs model validation
-    ).select('-__v');
+  async getJobById(idOrSlug) {
+    // Check if the param is a valid ObjectId, otherwise query by slug
+    const isObjectId = idOrSlug.match(/^[0-9a-fA-F]{24}$/);
+    const query = isObjectId ? { _id: idOrSlug } : { slug: idOrSlug };
     
-    if (!job) throw new Error('Job not found');
+    // Do not return soft deleted jobs
+    query.isDeleted = { $ne: true };
+
+    const job = await Job.findOne(query)
+      .select('-__v')
+      .populate('postedBy', 'name email avatar');
+      
+    if (!job) throw new AppError('Job not found', 404);
     return job;
   }
 
   /**
-   * Delete a job by ID
+   * Update a job by ID (Requires Ownership)
    */
-  async deleteJob(id) {
-    const job = await Job.findByIdAndDelete(id);
-    if (!job) throw new Error('Job not found');
+  async updateJob(id, userId, updateData) {
+    const job = await Job.findById(id);
+    if (!job || job.isDeleted) throw new AppError('Job not found', 404);
+
+    // Verify ownership
+    if (job.postedBy.toString() !== userId.toString()) {
+      throw new AppError('You are not authorized to update this job', 403);
+    }
+
+    // Use Object.assign to update fields, then save to trigger pre-save hooks (like slug update)
+    Object.assign(job, updateData);
+    await job.save();
+
+    return job;
+  }
+
+  /**
+   * Partially update a job's status (Requires Ownership)
+   */
+  async updateJobStatus(id, userId, status) {
+    const job = await Job.findById(id);
+    if (!job || job.isDeleted) throw new AppError('Job not found', 404);
+
+    // Verify ownership
+    if (job.postedBy.toString() !== userId.toString()) {
+      throw new AppError('You are not authorized to update this job', 403);
+    }
+
+    job.status = status;
+    await job.save();
+
+    return job;
+  }
+
+  /**
+   * Soft Delete a job by ID (Requires Ownership)
+   */
+  async deleteJob(id, userId) {
+    const job = await Job.findById(id);
+    if (!job || job.isDeleted) throw new AppError('Job not found', 404);
+
+    // Verify ownership
+    if (job.postedBy.toString() !== userId.toString()) {
+      throw new AppError('You are not authorized to delete this job', 403);
+    }
+
+    // Soft delete
+    job.isDeleted = true;
+    await job.save();
+
     return job;
   }
 }
