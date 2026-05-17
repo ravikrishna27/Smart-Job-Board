@@ -47,6 +47,17 @@ const applicationSchema = new mongoose.Schema({
   },
   rejectedAt: {
     type: Date
+  },
+  // AI Parsing Fields
+  atsScore: {
+    type: Number,
+    default: 0
+  },
+  extractedSkills: [{
+    type: String
+  }],
+  aiSummary: {
+    type: String
   }
 }, {
   timestamps: true

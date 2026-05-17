@@ -3,9 +3,9 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
-import { jobService } from '../../../services/jobService';
-import { getErrorMessage } from '../../../utils/getErrorMessage';
-import JobForm from '../../../components/jobs/JobForm';
+import { jobService } from '../../services/jobService';
+import { getErrorMessage } from '../../utils/getErrorMessage';
+import JobForm from '../../components/jobs/JobForm';
 
 export default function PostJob() {
   const navigate = useNavigate();

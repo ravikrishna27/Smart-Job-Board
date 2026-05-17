@@ -9,6 +9,7 @@ import jobRoutes from './routes/jobRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import applicationRoutes from './routes/applicationRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
 
 // Middleware Imports
 import { notFoundMiddleware } from './middleware/notFoundMiddleware.js';
@@ -39,6 +40,7 @@ app.use('/api/jobs', jobRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/applications', applicationRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // 4. Error Handling Middleware
 app.use(notFoundMiddleware); // Catches 404s

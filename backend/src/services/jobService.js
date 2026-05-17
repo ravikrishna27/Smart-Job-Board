@@ -1,5 +1,5 @@
 import Job from '../models/Job.js';
-import { AppError } from '../utils/AppError.js';
+import AppError from '../utils/AppError.js';
 
 class JobService {
   /**

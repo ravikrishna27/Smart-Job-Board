@@ -3,10 +3,10 @@ import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { ArrowLeft, Download, Eye, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import { applicationService } from '../../../services/applicationService';
-import { jobService } from '../../../services/jobService';
-import { getErrorMessage } from '../../../utils/getErrorMessage';
-import DashboardCard from '../../../components/dashboard/DashboardCard';
+import { applicationService } from '../../services/applicationService';
+import { jobService } from '../../services/jobService';
+import { getErrorMessage } from '../../utils/getErrorMessage';
+import DashboardCard from '../../components/dashboard/DashboardCard';
 
 export default function JobApplicants() {
   const { id: jobId } = useParams();
@@ -101,9 +101,43 @@ export default function JobApplicants() {
                           Applied on {new Date(app.appliedAt).toLocaleDateString()}
                         </div>
                         
-                        <div className="bg-gray-50 p-4 rounded-lg text-sm text-gray-700 italic border border-gray-100">
+                        <div className="bg-gray-50 p-4 rounded-lg text-sm text-gray-700 italic border border-gray-100 mb-4">
                           "{app.coverLetter}"
                         </div>
+                        
+                        {/* AI Parsed Data */}
+                        {(app.atsScore > 0 || app.extractedSkills?.length > 0) && (
+                          <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-4">
+                            <div className="flex items-center justify-between mb-3">
+                              <h4 className="text-sm font-semibold text-blue-900 flex items-center gap-2">
+                                <span className="bg-blue-600 text-white text-xs px-2 py-0.5 rounded">AI Match</span>
+                                ATS Score
+                              </h4>
+                              <div className={`text-lg font-bold ${app.atsScore >= 80 ? 'text-green-600' : app.atsScore >= 50 ? 'text-yellow-600' : 'text-red-600'}`}>
+                                {app.atsScore}%
+                              </div>
+                            </div>
+                            
+                            {app.extractedSkills?.length > 0 && (
+                              <div>
+                                <p className="text-xs text-blue-800 font-medium mb-2">Detected Skills:</p>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {app.extractedSkills.map(skill => (
+                                    <span key={skill} className="bg-white border border-blue-200 text-blue-700 px-2 py-0.5 rounded text-xs">
+                                      {skill}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            
+                            {app.aiSummary && (
+                              <p className="text-xs text-gray-600 mt-3 pt-3 border-t border-blue-100/50">
+                                {app.aiSummary}
+                              </p>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
 

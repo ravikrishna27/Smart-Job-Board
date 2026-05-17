@@ -3,6 +3,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { Menu, X, Briefcase, User as UserIcon } from 'lucide-react'
 import { ROUTES } from '../../routes/routePaths'
 import { useAuth } from '../../hooks/useAuth'
+import NotificationBell from '../layout/NotificationBell'
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -63,6 +64,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-4">
             {isAuthenticated ? (
               <>
+                <NotificationBell />
                 <Link 
                   to={dashboardRoute}
                   className="px-4 py-2 text-blue-600 font-medium hover:bg-blue-50 rounded-lg transition-colors flex items-center gap-2"
@@ -119,8 +121,9 @@ export default function Navbar() {
             <div className="border-t border-gray-200 pt-4 mt-4 space-y-2">
               {isAuthenticated ? (
                 <>
-                  <div className="px-3 pb-2 text-sm text-gray-500">
-                    Signed in as <span className="font-semibold text-gray-900">{user?.name}</span>
+                  <div className="px-3 pb-2 text-sm text-gray-500 flex justify-between items-center">
+                    <span>Signed in as <span className="font-semibold text-gray-900">{user?.name}</span></span>
+                    <NotificationBell />
                   </div>
                   <Link 
                     to={dashboardRoute}

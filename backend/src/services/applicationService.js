@@ -1,14 +1,16 @@
 import Application from '../models/Application.js';
 import Job from '../models/Job.js';
-import { AppError } from '../utils/AppError.js';
+import AppError from '../utils/AppError.js';
+import { notificationService } from './notificationService.js';
+import { NOTIFICATION_TYPES } from '../constants/notificationTypes.js';
 
 class ApplicationService {
   /**
    * Apply to a job
    */
-  async applyToJob(studentId, jobId, resumeData, coverLetter) {
+  async applyToJob(studentId, jobId, resumeData, coverLetter, user) {
     // 1. Check if job exists and is open
-    const job = await Job.findById(jobId);
+    const job = await Job.findById(jobId).populate('postedBy', 'name email');
     if (!job || job.isDeleted) throw new AppError('Job not found', 404);
     if (job.status !== 'open') throw new AppError('This job is no longer accepting applications', 400);
 
@@ -18,7 +20,36 @@ class ApplicationService {
       throw new AppError('You have already applied to this job', 400);
     }
 
-    // 3. Create application
+    // 3. Make synchronous call to Python AI Microservice
+    let aiData = { atsScore: 0, extractedSkills: [], aiSummary: "" };
+    try {
+      // In production, the Python URL should be in env
+      const pythonAiUrl = process.env.PYTHON_AI_URL || 'http://127.0.0.1:8000';
+      
+      const response = await fetch(`${pythonAiUrl}/analyze-resume`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          resume_url: resumeData.url,
+          job_skills: job.skills.map(s => s.name || s) // handle both array of strings and array of objects
+        })
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        aiData = {
+          atsScore: result.ats_score,
+          extractedSkills: result.extracted_skills,
+          aiSummary: result.ai_summary
+        };
+      } else {
+        console.warn('AI Parsing Service returned an error:', await response.text());
+      }
+    } catch (error) {
+      console.warn('AI Parsing Service is unreachable or failed. Falling back to basic application. Error:', error.message);
+    }
+
+    // 4. Create application
     const application = await Application.create({
       student: studentId,
       job: jobId,
@@ -26,8 +57,24 @@ class ApplicationService {
       resumePublicId: resumeData.public_id,
       resumeFileName: resumeData.originalName,
       resumeFileSize: resumeData.size,
-      coverLetter
+      coverLetter,
+      atsScore: aiData.atsScore,
+      extractedSkills: aiData.extractedSkills,
+      aiSummary: aiData.aiSummary
     });
+
+    // 5. Send Real-Time Notification to Recruiter
+    const studentName = user ? user.name : 'A student';
+    await notificationService.createNotification(
+      job.postedBy._id,
+      NOTIFICATION_TYPES.APPLICATION_RECEIVED,
+      `${studentName} applied for your ${job.title} position.`,
+      {
+        applicationId: application._id,
+        jobSlug: job.slug,
+        recruiterId: job.postedBy._id
+      }
+    );
 
     return application;
   }
@@ -64,7 +111,7 @@ class ApplicationService {
    * Update application status (Recruiter only)
    */
   async updateApplicationStatus(applicationId, recruiterId, status) {
-    const application = await Application.findById(applicationId).populate('job', 'postedBy');
+    const application = await Application.findById(applicationId).populate('job', 'postedBy title slug');
     if (!application) throw new AppError('Application not found', 404);
 
     // Verify recruiter owns the job
@@ -80,6 +127,18 @@ class ApplicationService {
     if (status === 'rejected') application.rejectedAt = new Date();
 
     await application.save();
+
+    // Emit Real-Time Notification to Student
+    await notificationService.createNotification(
+      application.student,
+      NOTIFICATION_TYPES.APPLICATION_STATUS_UPDATE,
+      `Your application for ${application.job.title} was marked as ${status}.`,
+      {
+        applicationId: application._id,
+        jobSlug: application.job.slug
+      }
+    );
+
     return application;
   }
 }

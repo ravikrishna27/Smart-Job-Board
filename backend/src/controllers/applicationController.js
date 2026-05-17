@@ -1,7 +1,7 @@
 import { applicationService } from '../services/applicationService.js';
 import { apiResponse } from '../utils/apiResponse.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
-import { AppError } from '../utils/AppError.js';
+import AppError from '../utils/AppError.js';
 
 /**
  * @desc    Apply for a job
@@ -22,7 +22,7 @@ export const applyToJob = asyncHandler(async (req, res) => {
     size: req.file.size
   };
 
-  const application = await applicationService.applyToJob(req.user._id, jobId, resumeData, coverLetter);
+  const application = await applicationService.applyToJob(req.user._id, jobId, resumeData, coverLetter, req.user);
   return apiResponse(res, 201, { data: application }, 'Application submitted successfully');
 });
 
