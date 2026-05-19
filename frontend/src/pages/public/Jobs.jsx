@@ -49,15 +49,17 @@ export default function Jobs() {
 
   // Filter state
   const [filters, setFilters] = useState({
-    jobType: searchParams.get('jobType') || '',
-    experienceLevel: searchParams.get('experienceLevel') || '',
+    jobTypes: searchParams.get('jobType') ? searchParams.get('jobType').split(',') : [],
+    experienceLevels: searchParams.get('experienceLevel') ? searchParams.get('experienceLevel').split(',') : [],
+    salaryRanges: [],
+    remoteOnly: false,
     location: searchParams.get('location') || '',
   });
 
   // Action: Clear all filters
   const handleClearFilters = () => {
     setSearchQuery('');
-    setFilters({ jobType: '', experienceLevel: '', location: '' });
+    setFilters({ jobTypes: [], experienceLevels: [], salaryRanges: [], remoteOnly: false, location: '' });
     setSortBy('-createdAt');
     setSearchParams({});
   };
@@ -67,8 +69,8 @@ export default function Jobs() {
     const params = new URLSearchParams();
     if (debouncedSearch) params.set('keyword', debouncedSearch);
     if (sortBy && sortBy !== '-createdAt') params.set('sort', sortBy);
-    if (filters.jobType) params.set('jobType', filters.jobType);
-    if (filters.experienceLevel) params.set('experienceLevel', filters.experienceLevel);
+    if (filters.jobTypes && filters.jobTypes.length > 0) params.set('jobType', filters.jobTypes.join(','));
+    if (filters.experienceLevels && filters.experienceLevels.length > 0) params.set('experienceLevel', filters.experienceLevels.join(','));
     if (filters.location) params.set('location', filters.location);
     
     setSearchParams(params, { replace: true });
@@ -81,8 +83,8 @@ export default function Jobs() {
       try {
         const params = {
           keyword: debouncedSearch || undefined,
-          jobType: filters.jobType || undefined,
-          experienceLevel: filters.experienceLevel || undefined,
+          jobType: filters.jobTypes?.length > 0 ? filters.jobTypes.join(',') : undefined,
+          experienceLevel: filters.experienceLevels?.length > 0 ? filters.experienceLevels.join(',') : undefined,
           location: filters.location || undefined,
           sort: sortBy,
           page: 1,

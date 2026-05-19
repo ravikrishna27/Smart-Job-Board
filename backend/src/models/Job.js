@@ -97,14 +97,13 @@ const jobSchema = new mongoose.Schema({
 });
 
 // Generate slug before saving
-jobSchema.pre('save', function(next) {
+jobSchema.pre('save', function() {
   if (this.isModified('title') || this.isModified('company') || this.isNew) {
     const baseSlug = slugify(`${this.title} ${this.company}`, { lower: true, strict: true });
     // Add a short random string to ensure uniqueness even if title/company are identical
     const uniqueSuffix = Math.random().toString(36).substring(2, 7);
     this.slug = `${baseSlug}-${uniqueSuffix}`;
   }
-  next();
 });
 
 // Compound index for complex searches

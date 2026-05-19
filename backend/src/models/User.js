@@ -50,16 +50,15 @@ userSchema.index({ createdAt: -1 });
 /**
  * Pre-save middleware to hash password before saving to MongoDB
  */
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function() {
   // Only run this function if password was modified (not on other update operations)
   if (!this.isModified('password')) {
-    return next();
+    return;
   }
 
   // Hash password with cost factor of 10
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
-  next();
 });
 
 /**

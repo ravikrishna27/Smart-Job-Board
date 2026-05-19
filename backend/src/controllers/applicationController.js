@@ -15,8 +15,10 @@ export const applyToJob = asyncHandler(async (req, res) => {
     throw new AppError('Resume PDF is required', 400);
   }
 
+  const serverUrl = process.env.SERVER_URL || 'http://localhost:5000';
+  
   const resumeData = {
-    url: req.file.path,
+    url: `${serverUrl}/uploads/resumes/${req.file.filename}`,
     public_id: req.file.filename,
     originalName: req.file.originalname,
     size: req.file.size

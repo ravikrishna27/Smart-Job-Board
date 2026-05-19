@@ -11,8 +11,7 @@ const jobSchema = z.object({
   description: z.string().min(1, "Job description is required"),
   requirements: z.array(z.string()).optional(),
   responsibilities: z.array(z.string()).optional(),
-  isRemote: z.boolean().optional(),
-  postedBy: z.string().min(1, "PostedBy is required")
+  isRemote: z.boolean().optional()
 });
 
 export const validateJob = (req, res, next) => {
@@ -23,7 +22,7 @@ export const validateJob = (req, res, next) => {
   } catch (error) {
     if (error instanceof z.ZodError) {
       // Format Zod errors nicely
-      const formattedErrors = error.errors.map(err => ({
+      const formattedErrors = error.issues.map(err => ({
         field: err.path.join('.'),
         message: err.message
       }));

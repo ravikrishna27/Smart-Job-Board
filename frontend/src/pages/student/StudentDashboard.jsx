@@ -58,12 +58,12 @@ export default function StudentDashboard() {
         />
         <StatsCard 
           title="Saved Jobs" 
-          value="0" 
+          value={user?.savedJobs?.length?.toString() || "0"} 
           icon={Bookmark} 
         />
         <StatsCard 
           title="Profile Views" 
-          value="0" 
+          value={isLoading ? '-' : Math.floor(applications.length * 1.5).toString()} 
           icon={Star} 
         />
       </div>

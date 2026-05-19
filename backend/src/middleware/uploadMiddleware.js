@@ -1,19 +1,26 @@
 import multer from 'multer';
-import { CloudinaryStorage } from 'multer-storage-cloudinary';
-import cloudinary from '../config/cloudinary.js';
+import fs from 'fs';
+import path from 'path';
+import crypto from 'crypto';
 import AppError from '../utils/AppError.js';
 
-// Setup Cloudinary storage
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: 'sjb_resumes',
-    // We want the file to be uploaded as a raw pdf file, not an image
-    format: async (req, file) => 'pdf',
-    resource_type: 'raw',
-  },
-});
+const uploadPath = path.join(process.cwd(), 'uploads', 'resumes');
 
+// Ensure upload directory exists
+if (!fs.existsSync(uploadPath)) {
+  fs.mkdirSync(uploadPath, { recursive: true });
+}
+
+// Setup local disk storage
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadPath);
+  },
+  filename: function (req, file, cb) {
+    const uniqueName = `${crypto.randomUUID()}-${file.originalname}`;
+    cb(null, uniqueName);
+  }
+});
 // File filter for PDF only and MIME type check
 const fileFilter = (req, file, cb) => {
   if (file.mimetype === 'application/pdf') {

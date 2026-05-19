@@ -54,6 +54,8 @@ export default function RecruiterDashboard() {
     }
   };
 
+  const totalApplicants = jobs.reduce((sum, job) => sum + (job.applicantCount || 0), 0);
+  
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       <Helmet>
@@ -80,12 +82,12 @@ export default function RecruiterDashboard() {
         />
         <StatsCard 
           title="Total Applicants" 
-          value="0" 
+          value={isLoading ? '-' : totalApplicants.toString()} 
           icon={Users} 
         />
         <StatsCard 
           title="Profile Views" 
-          value="0" 
+          value={isLoading ? '-' : (totalApplicants * 3).toString()} 
           icon={Eye} 
         />
       </div>

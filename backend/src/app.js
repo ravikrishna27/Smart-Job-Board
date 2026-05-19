@@ -30,6 +30,9 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev')); // Log HTTP requests
 }
 
+import path from 'path';
+// Serve static files from uploads directory (development/college project only)
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 // 2. Health Check Route
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', message: 'Server is healthy' });

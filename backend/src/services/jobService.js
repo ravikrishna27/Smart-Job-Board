@@ -40,8 +40,8 @@ class JobService {
     if (location) {
       filter.location = { $regex: location, $options: 'i' };
     }
-    if (jobType) filter.jobType = jobType;
-    if (experienceLevel) filter.experienceLevel = experienceLevel;
+    if (jobType) filter.jobType = { $in: jobType.split(',') };
+    if (experienceLevel) filter.experienceLevel = { $in: experienceLevel.split(',') };
 
     // 2. Build the Mongoose Query
     let mongooseQuery = Job.find(filter)
@@ -82,10 +82,24 @@ class JobService {
    * Fetch jobs posted by a specific recruiter
    */
   async getMyJobs(userId) {
-    const jobs = await Job.find({ 
-      postedBy: userId,
-      isDeleted: { $ne: true } 
-    }).sort('-createdAt').select('-__v');
+    const jobs = await Job.aggregate([
+      { $match: { postedBy: userId, isDeleted: { $ne: true } } },
+      {
+        $lookup: {
+          from: 'applications',
+          localField: '_id',
+          foreignField: 'job',
+          as: 'applications'
+        }
+      },
+      {
+        $addFields: {
+          applicantCount: { $size: '$applications' }
+        }
+      },
+      { $project: { applications: 0, __v: 0 } },
+      { $sort: { createdAt: -1 } }
+    ]);
     return jobs;
   }
 

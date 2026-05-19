@@ -19,7 +19,7 @@ export const validateRegister = (req, res, next) => {
     next();
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const formattedErrors = error.errors.map(err => err.message).join(', ');
+      const formattedErrors = error.issues.map(err => err.message).join(', ');
       return next(new AppError(`Validation Failed: ${formattedErrors}`, 400));
     }
     next(error);
@@ -32,7 +32,7 @@ export const validateLogin = (req, res, next) => {
     next();
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const formattedErrors = error.errors.map(err => err.message).join(', ');
+      const formattedErrors = error.issues.map(err => err.message).join(', ');
       return next(new AppError(`Validation Failed: ${formattedErrors}`, 400));
     }
     next(error);
