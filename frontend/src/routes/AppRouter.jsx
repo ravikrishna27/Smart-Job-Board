@@ -19,7 +19,17 @@ import NotFound from "../pages/public/NotFound";
 
 // Dashboard Pages
 import StudentDashboard from "../pages/student/StudentDashboard";
+import AppliedJobs from "../pages/student/AppliedJobs";
+import SavedJobs from "../pages/student/SavedJobs";
+import StudentProfile from "../pages/student/StudentProfile";
+import StudentSettings from "../pages/student/StudentSettings";
+
 import RecruiterDashboard from "../pages/recruiter/RecruiterDashboard";
+import ManageJobs from "../pages/recruiter/ManageJobs";
+import AllApplicants from "../pages/recruiter/AllApplicants";
+import RecruiterAnalytics from "../pages/recruiter/RecruiterAnalytics";
+import CompanyProfile from "../pages/recruiter/CompanyProfile";
+import RecruiterSettings from "../pages/recruiter/RecruiterSettings";
 import PostJob from "../pages/recruiter/PostJob";
 import EditJob from "../pages/recruiter/EditJob";
 import JobApplicants from "../pages/recruiter/JobApplicants";
@@ -48,7 +58,10 @@ export default function AppRouter() {
         }
       >
         <Route path="dashboard" element={<StudentDashboard />} />
-        {/* other student routes will go here */}
+        <Route path="dashboard/applied" element={<AppliedJobs />} />
+        <Route path="dashboard/saved" element={<SavedJobs />} />
+        <Route path="dashboard/profile" element={<StudentProfile />} />
+        <Route path="dashboard/settings" element={<StudentSettings />} />
       </Route>
 
       <Route 
@@ -60,6 +73,11 @@ export default function AppRouter() {
         }
       >
         <Route path="dashboard" element={<RecruiterDashboard />} />
+        <Route path="dashboard/jobs" element={<ManageJobs />} />
+        <Route path="dashboard/applicants" element={<AllApplicants />} />
+        <Route path="dashboard/analytics" element={<RecruiterAnalytics />} />
+        <Route path="dashboard/profile" element={<CompanyProfile />} />
+        <Route path="dashboard/settings" element={<RecruiterSettings />} />
         <Route path="jobs/new" element={<PostJob />} />
         <Route path="jobs/edit/:id" element={<EditJob />} />
         <Route path="jobs/:id/applicants" element={<JobApplicants />} />

@@ -3,6 +3,7 @@ import {
   applyToJob, 
   getMyApplications, 
   getJobApplicants, 
+  getAllApplicantsForRecruiter,
   updateApplicationStatus 
 } from '../controllers/applicationController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
@@ -19,6 +20,9 @@ router.route('/me')
   .get(protect, authorize('student'), getMyApplications);
 
 // Recruiter Routes
+router.route('/recruiter/all')
+  .get(protect, authorize('recruiter'), getAllApplicantsForRecruiter);
+
 router.route('/job/:jobId')
   .get(protect, authorize('recruiter'), getJobApplicants);
 

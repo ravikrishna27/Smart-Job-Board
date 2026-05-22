@@ -49,6 +49,16 @@ export const getJobApplicants = asyncHandler(async (req, res) => {
 });
 
 /**
+ * @desc    Get all applicants across all of recruiter's jobs
+ * @route   GET /api/applications/recruiter/all
+ * @access  Private (Recruiter)
+ */
+export const getAllApplicantsForRecruiter = asyncHandler(async (req, res) => {
+  const applicants = await applicationService.getAllRecruiterApplicants(req.user._id);
+  return apiResponse(res, 200, { data: applicants }, 'All applicants fetched successfully');
+});
+
+/**
  * @desc    Update application status
  * @route   PATCH /api/applications/:id/status
  * @access  Private (Recruiter)

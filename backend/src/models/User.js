@@ -39,7 +39,64 @@ const userSchema = new mongoose.Schema({
   savedJobs: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Job'
-  }]
+  }],
+  bio: {
+    type: String,
+    default: ''
+  },
+  resumeUrl: {
+    type: String,
+    default: ''
+  },
+  resumeFileName: {
+    type: String,
+    default: ''
+  },
+  education: {
+    type: [{
+      institution: String,
+      degree: String,
+      fieldOfStudy: String,
+      startYear: Number,
+      endYear: Number
+    }],
+    default: []
+  },
+  experience: {
+    type: [{
+      company: String,
+      role: String,
+      startDate: String,
+      endDate: String,
+      current: Boolean,
+      description: String
+    }],
+    default: []
+  },
+  companyName: {
+    type: String,
+    default: ''
+  },
+  companyWebsite: {
+    type: String,
+    default: ''
+  },
+  companyIndustry: {
+    type: String,
+    default: ''
+  },
+  companySize: {
+    type: String,
+    default: ''
+  },
+  companyDescription: {
+    type: String,
+    default: ''
+  },
+  companyLocation: {
+    type: String,
+    default: ''
+  }
 }, {
   timestamps: true // Adds createdAt and updatedAt
 });

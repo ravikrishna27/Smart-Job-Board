@@ -108,6 +108,19 @@ class ApplicationService {
   }
 
   /**
+   * Get all applicants across all jobs of a recruiter (Recruiter only)
+   */
+  async getAllRecruiterApplicants(recruiterId) {
+    const jobs = await Job.find({ postedBy: recruiterId, isDeleted: false });
+    const jobIds = jobs.map(j => j._id);
+
+    return await Application.find({ job: { $in: jobIds } })
+      .populate('student', 'name email avatar')
+      .populate('job', 'title company location status slug')
+      .sort('-appliedAt');
+  }
+
+  /**
    * Update application status (Recruiter only)
    */
   async updateApplicationStatus(applicationId, recruiterId, status) {

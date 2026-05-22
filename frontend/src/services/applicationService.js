@@ -30,6 +30,14 @@ export const applicationService = {
   },
 
   /**
+   * Get all applicants across all jobs (Recruiter)
+   */
+  getAllRecruiterApplicants: async () => {
+    const response = await api.get('/applications/recruiter/all');
+    return response.data;
+  },
+
+  /**
    * Update the status of an application (Recruiter)
    */
   updateApplicationStatus: async (applicationId, status) => {
