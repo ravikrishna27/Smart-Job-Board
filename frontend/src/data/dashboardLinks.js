@@ -7,7 +7,8 @@ import {
   FileText, 
   Users, 
   BarChart,
-  Building
+  Building,
+  Award
 } from 'lucide-react';
 import { ROUTES } from '../routes/routePaths';
 
@@ -31,6 +32,11 @@ export const studentLinks = [
     title: "My Profile",
     icon: User,
     path: `${ROUTES.STUDENT_DASHBOARD}/profile`
+  },
+  {
+    title: "AI ATS Insights",
+    icon: Award,
+    path: `${ROUTES.STUDENT_DASHBOARD}/analytics`
   },
   {
     title: "Settings",

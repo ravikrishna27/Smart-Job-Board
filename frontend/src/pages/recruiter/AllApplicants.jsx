@@ -95,6 +95,11 @@ export default function AllApplicants() {
       if (sortBy === 'ats-low') {
         return (a.atsScore || 0) - (b.atsScore || 0);
       }
+      if (sortBy === 'semantic-high') {
+        const scoreA = (a.atsScore || 0) * 0.7 + (a.coverLetter ? 30 : 10);
+        const scoreB = (b.atsScore || 0) * 0.7 + (b.coverLetter ? 30 : 10);
+        return scoreB - scoreA;
+      }
       return 0;
     });
 
@@ -228,6 +233,7 @@ export default function AllApplicants() {
                 <option value="newest">Sort by: Date Applied</option>
                 <option value="ats-high">Sort by: ATS Match (High)</option>
                 <option value="ats-low">Sort by: ATS Match (Low)</option>
+                <option value="semantic-high">Sort by: Hybrid Semantic Fit</option>
               </select>
             </div>
           </div>
@@ -393,21 +399,55 @@ export default function AllApplicants() {
                   )}
 
                   {/* Skills tags */}
-                  {app.extractedSkills?.length > 0 && (
-                    <div className="mt-4 flex flex-wrap gap-2 items-center">
-                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mr-1">Skills Detected:</span>
-                      <div className="flex flex-wrap gap-1">
-                        {app.extractedSkills.map(skill => (
-                          <span 
-                            key={skill} 
-                            className="bg-blue-50 border border-blue-100/50 text-blue-700 px-2 py-0.5 rounded-lg text-[10px] font-semibold"
-                          >
-                            {skill}
-                          </span>
-                        ))}
+                  {(() => {
+                    const jobSkills = app.job?.skills?.map(s => (typeof s === 'string' ? s : s.name || s)) || [];
+                    const candidateSkills = app.extractedSkills || [];
+                    
+                    const matchedSkills = jobSkills.filter(s => candidateSkills.some(cs => cs.toLowerCase() === s.toLowerCase()));
+                    const missingSkills = jobSkills.filter(s => !candidateSkills.some(cs => cs.toLowerCase() === s.toLowerCase()));
+                    const otherSkills = candidateSkills.filter(cs => !jobSkills.some(s => s.toLowerCase() === cs.toLowerCase()));
+
+                    return (
+                      <div className="mt-4 space-y-2.5 border-t border-gray-50 pt-3">
+                        {matchedSkills.length > 0 && (
+                          <div className="flex flex-wrap gap-2 items-center text-[10px]">
+                            <span className="font-bold text-green-600 uppercase tracking-wider mr-1">Matched Skills:</span>
+                            <div className="flex flex-wrap gap-1">
+                              {matchedSkills.map(skill => (
+                                <span key={skill} className="bg-green-50 border border-green-100 text-green-700 px-2 py-0.5 rounded-lg font-semibold">
+                                  ✓ {skill}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {missingSkills.length > 0 && (
+                          <div className="flex flex-wrap gap-2 items-center text-[10px]">
+                            <span className="font-bold text-amber-600 uppercase tracking-wider mr-1">Missing Skills:</span>
+                            <div className="flex flex-wrap gap-1">
+                              {missingSkills.map(skill => (
+                                <span key={skill} className="bg-amber-50 border border-amber-100 text-amber-700 px-2 py-0.5 rounded-lg font-semibold">
+                                  ⚠ {skill}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {otherSkills.length > 0 && (
+                          <div className="flex flex-wrap gap-2 items-center text-[10px]">
+                            <span className="font-bold text-gray-400 uppercase tracking-wider mr-1">Other Skills:</span>
+                            <div className="flex flex-wrap gap-1">
+                              {otherSkills.map(skill => (
+                                <span key={skill} className="bg-gray-50 border border-gray-200/50 text-gray-600 px-2 py-0.5 rounded-lg font-medium">
+                                  {skill}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  )}
+                    );
+                  })()}
 
                   {/* AI resume recommendation trigger */}
                   {app.aiSummary && (

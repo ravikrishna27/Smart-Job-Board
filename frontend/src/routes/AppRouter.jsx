@@ -23,6 +23,7 @@ import AppliedJobs from "../pages/student/AppliedJobs";
 import SavedJobs from "../pages/student/SavedJobs";
 import StudentProfile from "../pages/student/StudentProfile";
 import StudentSettings from "../pages/student/StudentSettings";
+import StudentAnalytics from "../pages/student/StudentAnalytics";
 
 import RecruiterDashboard from "../pages/recruiter/RecruiterDashboard";
 import ManageJobs from "../pages/recruiter/ManageJobs";
@@ -62,6 +63,7 @@ export default function AppRouter() {
         <Route path="dashboard/saved" element={<SavedJobs />} />
         <Route path="dashboard/profile" element={<StudentProfile />} />
         <Route path="dashboard/settings" element={<StudentSettings />} />
+        <Route path="dashboard/analytics" element={<StudentAnalytics />} />
       </Route>
 
       <Route 
